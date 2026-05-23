@@ -90,19 +90,15 @@ Phases map directly to the build order in the spec.
 
 ---
 
-## Phase 5 — `Recall.Retrieval`
+## Phase 5 — `Recall.Retrieval` ✅ DONE (v0.5.0)
 
-- [ ] Create project `Recall.Retrieval/Recall.Retrieval.csproj`
-- [ ] Define `ChunkResult` record: `Text`, `FilePath`, `FileName`, `Kind`, `Distance`
-- [ ] Implement `Retriever.cs`
-  - [ ] `Query(string userQuery) → List<ChunkResult>`
-    - [ ] Embed query via `OllamaClient.Embed()`
-    - [ ] Search via `VectorStore.Search()`
-    - [ ] Filter by `MinSimilarityScore`
-  - [ ] `AssembleContext(List<ChunkResult> chunks) → string`
-    - [ ] Group by source file
-    - [ ] Format: `[Source: {filename}]\n{chunks}\n---\n`
-- [ ] Test retrieval with queries against an already-ingested KB
+- [x] Create project `Recall.Retrieval/Recall.Retrieval.csproj`
+- [x] Define `ChunkResult` record: `RowId`, `FileId`, `ChunkIndex`, `Text`, `FilePath`, `FileName`, `Kind`, `Distance`
+- [x] Define `RetrievalConfig`: `TopK` (5), `MaxDistance` (1.0 ≈ cosine ≥ 0.5), `MaxContextChars` (6 000)
+- [x] Implement `Retriever.cs`
+  - [x] `QueryAsync(string userQuery) → List<ChunkResult>` — embed + vector search
+  - [x] `AssembleContext(List<ChunkResult>) → string` — group by file, `[Source:]` headers, char cap
+- [x] `Recall.RetrievalTest` — KB seeded ✓ · query 5 hits ✓ · top result correct file ✓ · context headers ✓ · char cap ✓
 
 ---
 

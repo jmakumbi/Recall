@@ -4,6 +4,22 @@ Phases are released as GitHub tags once all tasks in the phase are done.
 
 ---
 
+## Phase 5 — `Recall.Retrieval` — v0.5.0 — 2026-05-23
+
+**Released:** [v0.5.0](https://github.com/jmakumbi/Recall/releases/tag/v0.5.0)
+
+Implemented the retrieval and context-assembly layer:
+
+- `RetrievalModels.cs` — `ChunkResult` record (`RowId`, `FileId`, `ChunkIndex`, `Text`, `FilePath`, `FileName`, `Kind`, `Distance`); `RetrievalConfig` (`TopK=5`, `MaxDistance=1.0`, `MaxContextChars=6000`)
+- `Retriever.cs`
+  - `QueryAsync()` — embeds the user query via `OllamaClient.EmbedAsync`, searches `VectorStore`, maps rows to `ChunkResult`
+  - `AssembleContext()` — groups chunks by source file, formats as `[Source: filename]\ntext\n---`, caps at `MaxContextChars` with partial-chunk truncation
+- `Recall.RetrievalTest` — seeds a 2-file KB (Recall topic vs. solar system), queries for Recall content, validates top result is from the correct file
+
+**Verified:** 35 chunks across 2 files · top-5 query hits ✓ · closest chunk from correct topic file (L2≈0.83) ✓ · `[Source:]` headers in assembled context ✓ · 500-char cap respected (499 chars) ✓
+
+---
+
 ## Phase 4 — `Recall.Ingestion` — v0.4.0 — 2026-05-23
 
 **Released:** [v0.4.0](https://github.com/jmakumbi/Recall/releases/tag/v0.4.0)
