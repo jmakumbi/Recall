@@ -60,7 +60,9 @@ public sealed class Repl
             string? input;
             try
             {
-                input = AnsiConsole.Ask<string>("[bold cyan]recall>[/]", string.Empty);
+                input = AnsiConsole.Prompt(
+                    new TextPrompt<string>("[bold cyan]recall>[/]")
+                        .AllowEmpty());
             }
             catch (Exception)
             {
