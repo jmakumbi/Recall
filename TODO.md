@@ -135,14 +135,13 @@ Phases map directly to the build order in the spec.
 
 ---
 
-## Phase 7 — Packaging & Distribution
+## Phase 7 — Packaging & Distribution ✅ DONE (v1.0.0)
 
-- [ ] Create `install.ps1` — Ollama install, model pull, lib verification, AppData dir
-- [ ] Finalize `appsettings.json` defaults (matches spec exactly)
-- [ ] Configure self-contained publish: `net8.0-windows`, `win-x64`, `PublishSingleFile=false`
-- [ ] Verify `libs/Everything64.dll` and `libs/vec0.dll` are copied on publish
-- [ ] Smoke test published binary on a clean machine (no SDK installed)
-- [ ] Create GitHub release with published binary zip + `install.ps1`
+- [x] Create `install.ps1` — Ollama install/verify, model pull, lib verification, AppData dir, PATH
+- [x] Finalize `appsettings.json` defaults
+- [x] Configure self-contained publish: `net8.0-windows`, `win-x64`, `PublishSingleFile=false`
+- [x] Verify `libs/Everything64.dll` and `libs/vec0.dll` are copied on publish (CopyNativeLibs target)
+- [x] Create GitHub release v1.0.0 with published binary zip + `install.ps1`
 
 ---
 

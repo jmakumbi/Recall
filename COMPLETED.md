@@ -4,6 +4,26 @@ Phases are released as GitHub tags once all tasks in the phase are done.
 
 ---
 
+## Phase 7 — Packaging & Distribution — v1.0.0 — 2026-05-23
+
+**Released:** [v1.0.0](https://github.com/jmakumbi/Recall/releases/tag/v1.0.0)
+
+Implemented the installer and final release packaging:
+
+- `install.ps1` — PowerShell installer:
+  - Checks for / silently installs Ollama from `ollama.com/download/windows`
+  - Pulls embedding model (`nomic-embed-text`) and chat model (`qwen3:8b`) via `ollama pull`
+  - Validates `libs\vec0.dll` (required) and `libs\Everything64.dll` (optional)
+  - Installs all files to `%APPDATA%\recall\`
+  - Adds `%APPDATA%\recall` to the user PATH
+  - ASCII banner, colourized progress, clear error messages
+  - `--SkipOllama` and `--SkipModelPull` flags for CI / offline scenarios
+- Self-contained publish: `net8.0-windows`, `win-x64`, `PublishSingleFile=false` — no .NET SDK needed on target machine
+- `CopyNativeLibs` MSBuild target copies `libs\` next to exe on publish
+- Release artifact: `recall-v1.0.0-win-x64.zip` (≈ 34 MB self-contained)
+
+---
+
 ## Phase 6 — `Recall.Cli` — v0.6.0 — 2026-05-23
 
 **Released:** [v0.6.0](https://github.com/jmakumbi/Recall/releases/tag/v0.6.0)
