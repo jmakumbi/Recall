@@ -19,7 +19,22 @@ public record DiscoveryResult(
 
 public sealed class DiscoveryConfig
 {
-    public string EverythingDllPath  { get; init; } = @"libs\Everything64.dll";
-    public string DefaultSearchScope { get; init; } = "%USERPROFILE%";
-    public uint   MaxResults         { get; init; } = 200;
+    public string   EverythingDllPath { get; init; } = @"libs\Everything64.dll";
+
+    /// <summary>
+    /// Directories to search, recursively. Supports %APPDATA% / %USERPROFILE% etc.
+    /// Populated at runtime from appsettings.json → Discovery.SearchPaths.
+    /// If empty on first run, the /setup command will prompt the user to configure it.
+    /// </summary>
+    public string[] SearchPaths { get; init; } = [];
+
+    public uint MaxResults { get; init; } = 200;
+
+    /// <summary>Returns expanded, deduplicated, existing paths.</summary>
+    public IReadOnlyList<string> ResolvedPaths() =>
+        SearchPaths
+            .Select(p => Environment.ExpandEnvironmentVariables(p).TrimEnd('\\'))
+            .Where(Directory.Exists)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 }

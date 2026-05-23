@@ -4,14 +4,14 @@ var query = args.Length > 0 ? string.Join(' ', args) : "readme";
 
 var config = new DiscoveryConfig
 {
-    EverythingDllPath  = Path.GetFullPath(@"libs\Everything64.dll"),
-    DefaultSearchScope = "%USERPROFILE%",
-    MaxResults         = 20
+    EverythingDllPath = Path.GetFullPath(@"libs\Everything64.dll"),
+    SearchPaths       = [@"%USERPROFILE%"],
+    MaxResults        = 20
 };
 
 Console.WriteLine("=== Recall.Discovery smoke test ===");
 Console.WriteLine($"Query  : \"{query}\"");
-Console.WriteLine($"Scope  : {Environment.ExpandEnvironmentVariables(config.DefaultSearchScope)}");
+Console.WriteLine($"Paths  : {string.Join(", ", config.ResolvedPaths())}");
 Console.WriteLine($"DLL    : {config.EverythingDllPath} (exists: {File.Exists(config.EverythingDllPath)})");
 Console.WriteLine();
 

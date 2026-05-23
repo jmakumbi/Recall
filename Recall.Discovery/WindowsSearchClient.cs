@@ -19,13 +19,19 @@ public sealed class WindowsSearchClient
     public WindowsSearchClient(DiscoveryConfig config) => _config = config;
 
     /// <summary>
-    /// Run a full-text search against the Windows Search index.
+    /// Run a full-text search against the Windows Search index across all
+    /// configured <see cref="DiscoveryConfig.SearchPaths"/> (recursively).
     /// Returns at most 50 results. Never throws — returns empty on any failure.
     /// </summary>
     public IReadOnlyList<DiscoveryResult> Search(string query)
     {
-        var scope = Environment.ExpandEnvironmentVariables(_config.DefaultSearchScope)
-                               .TrimEnd('\\') + "\\%";
+        var paths = _config.ResolvedPaths();
+        if (paths.Count == 0)
+        {
+            // Fall back to %USERPROFILE% if no paths configured yet
+            paths = [Environment.ExpandEnvironmentVariables("%USERPROFILE%")];
+        }
+
         var results = new List<DiscoveryResult>();
 
         try
@@ -34,14 +40,17 @@ public sealed class WindowsSearchClient
             conn.Open();
 
             // Search.CollatorDSO.1 does not implement ICommandWithParameters,
-            // so we must inline values directly. Escape single quotes by doubling them.
+            // so inline values with single-quote escaping.
             var safeQuery = query.Replace("'", "''");
-            var safeScope = scope.Replace("'", "''");
 
-            // CONTAINS phrase syntax: wrap multi-word queries in double-quotes inside the string literal
             var containsArg = query.Contains(' ')
                 ? $"'\"{ safeQuery }\"'"
                 : $"'{safeQuery}'";
+
+            // Build OR condition across all configured paths (recursive via LIKE 'path\%')
+            var scopeClauses = paths
+                .Select(p => $"System.ItemPathDisplay LIKE '{p.Replace("'", "''")}\\%'");
+            var scopeWhere = "(" + string.Join(" OR ", scopeClauses) + ")";
 
             var sql = $"""
                 SELECT TOP 50
@@ -51,7 +60,7 @@ public sealed class WindowsSearchClient
                     System.DateModified
                 FROM SystemIndex
                 WHERE CONTAINS(*, {containsArg})
-                  AND System.ItemPathDisplay LIKE '{safeScope}'
+                  AND {scopeWhere}
                 ORDER BY System.DateModified DESC
                 """;
 

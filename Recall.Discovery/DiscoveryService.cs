@@ -11,21 +11,31 @@ public sealed class DiscoveryService
     private readonly EverythingClient    _everything;
     private readonly WindowsSearchClient _wds;
     private readonly TrackerDb?          _tracker;
+    private readonly DiscoveryConfig     _config;
 
     public DiscoveryService(DiscoveryConfig config, TrackerDb? tracker = null)
     {
+        _config     = config;
         _everything = new EverythingClient(config);
         _wds        = new WindowsSearchClient(config);
         _tracker    = tracker;
     }
 
     /// <summary>
-    /// Run both search backends, merge, deduplicate, and enrich with KB status.
+    /// Run both search backends across all <see cref="DiscoveryConfig.SearchPaths"/>,
+    /// merge, deduplicate, and enrich with KB status.
     /// Everything results are canonical (MFT is authoritative for path/size/date).
     /// WDS results contribute AutoSummary and Kind where paths match.
+    /// Returns empty with a console warning if no search paths are configured.
     /// </summary>
     public IReadOnlyList<DiscoveryResult> Search(string query)
     {
+        if (_config.SearchPaths.Length == 0)
+        {
+            Console.Error.WriteLine(
+                "[recall] No search paths configured. Run /setup to add folders to search.");
+        }
+
         var everythingHits = _everything.Search(query);
         var wdsHits        = _wds.Search(query);
 

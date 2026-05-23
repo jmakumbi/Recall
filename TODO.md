@@ -108,6 +108,10 @@ Phases map directly to the build order in the spec.
 
 ## Phase 6 — `Recall.Cli`
 
+> **`/setup` path wizard** (decided during Phase 3):
+> First-run interactive command that populates `SearchPaths` in `appsettings.json`.
+> If `SearchPaths` is empty on startup, REPL shows: `"No search paths configured — run /setup to get started."`
+
 - [ ] Create project `Recall.Cli/Recall.Cli.csproj` (console app)
 - [ ] Add `Spectre.Console`, `Microsoft.Extensions.DependencyInjection`, `Microsoft.Extensions.Configuration.Json`
 - [ ] Implement `Program.cs` — DI setup, config loading, startup health check
@@ -121,7 +125,12 @@ Phases map directly to the build order in the spec.
   - [ ] Default → chat query
 - [ ] Implement `Repl.cs` — main REPL loop
   - [ ] Startup banner with KB stats
-  - [ ] `/help` — command list
+  - [ ] `/setup` — interactive path wizard
+  - [ ] If `SearchPaths` is empty on startup, show nudge: `"No search paths configured — run /setup"`
+  - [ ] List current paths, prompt `[1] Add folder  [2] Remove folder  [3] Done`
+  - [ ] Validate each path exists; expand env vars before saving
+  - [ ] Write updated `SearchPaths` array back to `appsettings.json`
+- [ ] `/help` — command list
   - [ ] `/search <query>` — discovery only, no ingestion
   - [ ] `/ingest <query>` — discovery → selection prompt → ingest
   - [ ] `/kb` — KB stats display

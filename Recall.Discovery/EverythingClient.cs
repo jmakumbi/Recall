@@ -66,16 +66,21 @@ public sealed class EverythingClient
     }
 
     /// <summary>
-    /// Search Everything for files matching <paramref name="query"/>.
-    /// Returns up to <see cref="DiscoveryConfig.MaxResults"/> results.
+    /// Search Everything for files matching <paramref name="query"/> across all
+    /// configured <see cref="DiscoveryConfig.SearchPaths"/> (recursively).
     /// WdsSnippet, WdsKind, AlreadyIngested, IsStale are not populated here.
     /// </summary>
     public IReadOnlyList<DiscoveryResult> Search(string query)
     {
-        var scope = Environment.ExpandEnvironmentVariables(_config.DefaultSearchScope);
+        var paths = _config.ResolvedPaths();
 
-        // Scope the Everything query to the user's home directory
-        var everythingQuery = $"\"{scope}\" {query}";
+        // Build Everything query: scope to each configured path with OR (parents: prefix)
+        // e.g.  parents:"C:\Users\james\Documents" | parents:"D:\Projects"  readme
+        string scopePart = paths.Count > 0
+            ? string.Join(" | ", paths.Select(p => $"parents:\"{p}\""))
+            : $"parents:\"{Environment.ExpandEnvironmentVariables("%USERPROFILE%")}\"";
+
+        var everythingQuery = $"({scopePart}) {query}";
 
         SetSearch(everythingQuery);
         SetRequestFlags(
