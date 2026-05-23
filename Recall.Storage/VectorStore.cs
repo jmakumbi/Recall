@@ -55,16 +55,23 @@ public sealed class VectorStore
         var results = new List<ChunkRow>();
 
         using var cmd = _conn.CreateCommand();
+        // vec0 distance is only accessible in the virtual table's own SELECT;
+        // use a CTE to capture rowid+distance before joining to regular tables.
         cmd.CommandText = """
+            WITH knn AS (
+                SELECT rowid, distance
+                FROM vec_chunks
+                WHERE embedding MATCH vec_f32($emb)
+                  AND k = $k
+                ORDER BY distance
+            )
             SELECT c.rowid, c.file_id, c.chunk_index, c.text,
                    f.path, f.wds_kind,
-                   v.distance
-            FROM vec_chunks v
-            JOIN chunks c ON c.rowid = v.rowid
+                   knn.distance
+            FROM knn
+            JOIN chunks c ON c.rowid = knn.rowid
             JOIN ingested_files f ON f.id = c.file_id
-            WHERE v.embedding MATCH vec_f32($emb)
-              AND v.k = $k
-            ORDER BY v.distance
+            ORDER BY knn.distance
             """;
         cmd.Parameters.AddWithValue("$emb", embBytes);
         cmd.Parameters.AddWithValue("$k", topK);
