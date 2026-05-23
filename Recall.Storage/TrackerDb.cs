@@ -57,13 +57,25 @@ public sealed class TrackerDb : IDisposable
     public TrackedFile MarkIngested(
         string path, long sizeBytes, DateTime lastModified,
         int chunkCount, long[] vecRowIds, string? wdsKind = null)
+        => MarkIngested(path, sizeBytes, lastModified, chunkCount, vecRowIds, null, wdsKind);
+
+    /// <summary>
+    /// Upsert a file record. Participates in <paramref name="tx"/> when provided,
+    /// enabling atomic multi-step writes (embed-then-commit pattern).
+    /// </summary>
+    public TrackedFile MarkIngested(
+        string path, long sizeBytes, DateTime lastModified,
+        int chunkCount, long[] vecRowIds,
+        SqliteTransaction? tx,
+        string? wdsKind = null)
     {
-        var normPath = NormalisePath(path);
-        var now = DateTime.UtcNow.ToString("o");
+        var normPath   = NormalisePath(path);
+        var now        = DateTime.UtcNow.ToString("o");
         var rowIdsJson = JsonSerializer.Serialize(vecRowIds);
 
-        using var cmd = _conn.CreateCommand();
-        cmd.CommandText = """
+        using var cmd    = _conn.CreateCommand();
+        cmd.Transaction  = tx;
+        cmd.CommandText  = """
             INSERT INTO ingested_files (path, size_bytes, last_modified, chunk_count, ingested_at, wds_kind, vec_row_ids)
             VALUES ($path, $size, $lm, $cc, $ia, $kind, $vri)
             ON CONFLICT(path) DO UPDATE SET
@@ -77,15 +89,15 @@ public sealed class TrackerDb : IDisposable
             """;
         cmd.Parameters.AddWithValue("$path", normPath);
         cmd.Parameters.AddWithValue("$size", sizeBytes);
-        cmd.Parameters.AddWithValue("$lm", lastModified.ToString("o"));
-        cmd.Parameters.AddWithValue("$cc", chunkCount);
-        cmd.Parameters.AddWithValue("$ia", now);
+        cmd.Parameters.AddWithValue("$lm",   lastModified.ToString("o"));
+        cmd.Parameters.AddWithValue("$cc",   chunkCount);
+        cmd.Parameters.AddWithValue("$ia",   now);
         cmd.Parameters.AddWithValue("$kind", wdsKind ?? (object)DBNull.Value);
-        cmd.Parameters.AddWithValue("$vri", rowIdsJson);
+        cmd.Parameters.AddWithValue("$vri",  rowIdsJson);
 
         var id = (long)(cmd.ExecuteScalar() ?? 0L);
 
-        UpdateKbStats();
+        if (tx is null) UpdateKbStats(); // deferred to Commit when inside a tx
         return new TrackedFile(
             (int)id, normPath, sizeBytes, lastModified,
             chunkCount, DateTime.Parse(now), wdsKind, vecRowIds);
@@ -154,6 +166,23 @@ public sealed class TrackerDb : IDisposable
             WHERE id = 1
             """;
         cmd.Parameters.AddWithValue("$now", DateTime.UtcNow.ToString("o"));
+        cmd.ExecuteNonQuery();
+    }
+
+    /// <summary>Start a SQLite transaction for atomic multi-step writes.</summary>
+    public SqliteTransaction BeginTransaction() => _conn.BeginTransaction();
+
+    /// <summary>
+    /// Update the vec_row_ids column after chunks have been inserted.
+    /// Called within the same transaction that wrote the chunks.
+    /// </summary>
+    public void UpdateVecRowIds(int fileId, long[] vecRowIds, SqliteTransaction tx)
+    {
+        using var cmd = _conn.CreateCommand();
+        cmd.Transaction  = tx;
+        cmd.CommandText  = "UPDATE ingested_files SET vec_row_ids = $vri WHERE id = $id";
+        cmd.Parameters.AddWithValue("$vri", System.Text.Json.JsonSerializer.Serialize(vecRowIds));
+        cmd.Parameters.AddWithValue("$id",  fileId);
         cmd.ExecuteNonQuery();
     }
 

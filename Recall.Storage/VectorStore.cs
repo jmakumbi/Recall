@@ -9,40 +9,46 @@ public sealed class VectorStore
 
     public VectorStore(TrackerDb db) => _conn = db.Connection;
 
-    public long InsertChunk(int fileId, int chunkIndex, string text, float[] embedding)
+    public long InsertChunk(int fileId, int chunkIndex, string text, float[] embedding,
+        SqliteTransaction? tx = null)
     {
         var embBytes = FloatsToBytes(embedding);
 
-        using var cmd1 = _conn.CreateCommand();
-        cmd1.CommandText = "INSERT INTO vec_chunks (embedding) VALUES (vec_f32($emb))";
+        using var cmd1       = _conn.CreateCommand();
+        cmd1.Transaction     = tx;
+        cmd1.CommandText     = "INSERT INTO vec_chunks (embedding) VALUES (vec_f32($emb))";
         cmd1.Parameters.AddWithValue("$emb", embBytes);
         cmd1.ExecuteNonQuery();
 
-        using var cmd2 = _conn.CreateCommand();
+        using var cmd2   = _conn.CreateCommand();
+        cmd2.Transaction = tx;
         cmd2.CommandText = "SELECT last_insert_rowid()";
         var rowId = (long)(cmd2.ExecuteScalar() ?? throw new InvalidOperationException("No rowid returned"));
 
-        using var cmd3 = _conn.CreateCommand();
+        using var cmd3   = _conn.CreateCommand();
+        cmd3.Transaction = tx;
         cmd3.CommandText = "INSERT INTO chunks (rowid, file_id, chunk_index, text) VALUES ($rid, $fid, $ci, $txt)";
         cmd3.Parameters.AddWithValue("$rid", rowId);
         cmd3.Parameters.AddWithValue("$fid", fileId);
-        cmd3.Parameters.AddWithValue("$ci", chunkIndex);
+        cmd3.Parameters.AddWithValue("$ci",  chunkIndex);
         cmd3.Parameters.AddWithValue("$txt", text);
         cmd3.ExecuteNonQuery();
 
         return rowId;
     }
 
-    public void DeleteChunks(long[] rowIds)
+    public void DeleteChunks(long[] rowIds, SqliteTransaction? tx = null)
     {
         foreach (var id in rowIds)
         {
-            using var del1 = _conn.CreateCommand();
+            using var del1   = _conn.CreateCommand();
+            del1.Transaction = tx;
             del1.CommandText = "DELETE FROM chunks WHERE rowid = $rid";
             del1.Parameters.AddWithValue("$rid", id);
             del1.ExecuteNonQuery();
 
-            using var del2 = _conn.CreateCommand();
+            using var del2   = _conn.CreateCommand();
+            del2.Transaction = tx;
             del2.CommandText = "DELETE FROM vec_chunks WHERE rowid = $rid";
             del2.Parameters.AddWithValue("$rid", id);
             del2.ExecuteNonQuery();
