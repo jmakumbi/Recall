@@ -66,28 +66,31 @@ IFilter is a Windows COM interface that extracts text from arbitrary file types.
 
 ---
 
-## Native Libraries (required)
+## Native Libraries
 
-Two DLLs must be placed in the `libs\` folder alongside `recall.exe` before running.
+Both DLLs are **bundled in the release zip** inside the `libs\` folder — you do not need to download them separately.
 
-### `vec0.dll`
+| DLL | Purpose |
+|---|---|
+| `libs\vec0.dll` | Vector similarity search — [sqlite-vec](https://github.com/asg017/sqlite-vec/releases) |
+| `libs\Everything64.dll` | Fast file discovery — [Everything SDK](https://www.voidtools.com/downloads/) |
 
-Used for vector similarity search via sqlite-vec.
+> `Everything64.dll` requires the [Everything](https://www.voidtools.com) application to be installed and running. Without it, recall falls back to Windows Desktop Search (WDS), which is always available on Windows 10/11 but may not index every folder.
 
-1. Go to <https://github.com/asg017/sqlite-vec/releases>
-2. Download the latest Windows x64 loadable release (e.g. `sqlite-vec-*-loadable-windows-x86_64.tar.gz`)
-3. Extract and copy `vec0.dll` into `libs\`
+---
 
-### `Everything64.dll` (optional)
+## Supporting Software
 
-Used for fast file discovery via the Everything search engine.
+| Software | URL | Notes |
+|---|---|---|
+| **Ollama** | <https://ollama.com/download/windows> | Required. Runs all LLMs locally. |
+| **nomic-embed-text** | <https://ollama.com/library/nomic-embed-text> | Required. Embedding model (`ollama pull nomic-embed-text`). |
+| **qwen3:14b** | <https://ollama.com/library/qwen3> | Default chat model (`ollama pull qwen3:14b`). |
+| **Everything** | <https://www.voidtools.com> | Optional. Enables faster file discovery than WDS. |
+| **sqlite-vec** | <https://github.com/asg017/sqlite-vec/releases> | Bundled. Source of `vec0.dll`. |
+| **Everything SDK** | <https://www.voidtools.com/downloads/> | Bundled. Source of `Everything64.dll`. |
 
-1. Go to <https://www.voidtools.com/downloads/>
-2. Under **"Download Everything SDK"**, download the SDK zip
-3. Extract and copy `Everything64.dll` into `libs\`
-4. Install and run Everything so the IPC server is available
-
-> Without `Everything64.dll`, recall falls back to Windows Desktop Search (WDS), which is always available on Windows 10/11 but may not index every folder.
+> The installer (`install.ps1`) handles Ollama and model pulls automatically. The DLLs are pre-bundled — no manual downloads required.
 
 ---
 
@@ -102,9 +105,9 @@ The installer will:
 
 1. Check for Ollama and download it if missing
 2. Pull the embedding model (`nomic-embed-text`)
-3. Pull the default chat model (see `appsettings.json → Ollama.ChatModel`)
-4. Verify `libs\vec0.dll` is present
-5. Copy files to `%APPDATA%\recall\` and add it to your PATH
+3. Pull the default chat model (`qwen3:14b` — see `appsettings.json`)
+4. Verify the bundled `libs\vec0.dll` is present
+5. Copy files to `%APPDATA%\recall\` (including `libs\`) and add it to your PATH
 
 ---
 

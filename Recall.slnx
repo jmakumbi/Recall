@@ -2,6 +2,7 @@
   <Project Path="Recall.Cli/Recall.Cli.csproj" />
   <Project Path="Recall.Discovery/Recall.Discovery.csproj" />
   <Project Path="Recall.DiscoveryTest/Recall.DiscoveryTest.csproj" />
+  <Project Path="Recall.FullTest/Recall.FullTest.csproj" />
   <Project Path="Recall.Ingestion/Recall.Ingestion.csproj" />
   <Project Path="Recall.IngestionTest/Recall.IngestionTest.csproj" />
   <Project Path="Recall.Ollama/Recall.Ollama.csproj" />

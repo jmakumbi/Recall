@@ -79,6 +79,7 @@ public sealed class VectorStore
         using var r = cmd.ExecuteReader();
         while (r.Read())
         {
+            if (r.IsDBNull(6)) continue;
             var distance = (float)r.GetDouble(6);
             if (distance > minScore) continue;
             results.Add(new ChunkRow(
