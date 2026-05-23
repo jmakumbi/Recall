@@ -28,18 +28,18 @@ Phases map directly to the build order in the spec.
 
 ---
 
-## Phase 2 — `Recall.Ollama`
+## Phase 2 — `Recall.Ollama` ✅ DONE (v0.2.0)
 
-- [ ] Create project `Recall.Ollama/Recall.Ollama.csproj`
-- [ ] Add `System.Text.Json` reference
-- [ ] Implement `OllamaModels.cs` — request/response DTOs for embed and chat
-- [ ] Implement `OllamaClient.cs`
-  - [ ] `HealthCheck() → OllamaHealthResult` — `GET /api/tags`, verify both models present
-  - [ ] `Embed(string text) → float[]` — `POST /api/embeddings`
-  - [ ] `Chat(IEnumerable<ChatMessage> messages) → IAsyncEnumerable<string>` — streaming `POST /api/chat`
-- [ ] Define `OllamaUnavailableException` — thrown on connection refused
-- [ ] Surface startup warning if `nomic-embed-text` or `qwen3:8b` is missing
-- [ ] Test embed and chat against a running Ollama instance
+- [x] Create project `Recall.Ollama/Recall.Ollama.csproj`
+- [x] `System.Text.Json` used (BCL, no extra NuGet needed)
+- [x] Implement `OllamaModels.cs` — `OllamaConfig`, `ChatMessage`, `OllamaHealthResult`, internal DTOs
+- [x] Implement `OllamaClient.cs`
+  - [x] `HealthCheckAsync()` — `GET /api/tags`, model name fuzzy match (handles `:latest` tags)
+  - [x] `EmbedAsync(string text) → float[]` — `POST /api/embeddings`
+  - [x] `ChatAsync(messages) → IAsyncEnumerable<string>` — streaming `POST /api/chat` via `ResponseHeadersRead`
+- [x] Define `OllamaUnavailableException` — thrown on connection refused / socket error
+- [x] Startup warning surfaced for each missing model with pull command
+- [x] `Recall.OllamaTest` — smoke test: health check ✓, embed 768-dim ✓, streaming chat ✓
 
 ---
 

@@ -4,6 +4,25 @@ Phases are released as GitHub tags once all tasks in the phase are done.
 
 ---
 
+## Phase 2 — `Recall.Ollama` — v0.2.0 — 2026-05-23
+
+**Released:** [v0.2.0](https://github.com/jmakumbi/Recall/releases/tag/v0.2.0)
+
+Implemented the Ollama HTTP client layer:
+
+- `OllamaModels.cs` — `OllamaConfig`, `ChatMessage` (system/user/assistant factory methods), `OllamaHealthResult`, internal request/response DTOs
+- `OllamaUnavailableException` — thrown on connection refused; REPL will catch and show friendly message
+- `OllamaClient.cs`
+  - `HealthCheckAsync()` — `GET /api/tags`, fuzzy model name matching (handles `:latest` suffix)
+  - `EmbedAsync()` — `POST /api/embeddings`, returns `float[]`; validates non-empty result
+  - `ChatAsync()` — streaming `POST /api/chat` via `HttpCompletionOption.ResponseHeadersRead`, yields tokens as `IAsyncEnumerable<string>`
+  - `SystemPrompt` constant — knowledge-assistant persona
+- `Recall.OllamaTest` — smoke test with live Ollama; falls back to any available model for streaming path verification
+
+**Verified:** health check ✓ · embed (768-dim) ✓ · streaming chat ✓
+
+---
+
 ## Phase 1 — `Recall.Storage` — v0.1.0 — 2026-05-23
 
 **Released:** [v0.1.0](https://github.com/jmakumbi/Recall/releases/tag/v0.1.0) · [v0.1.1](https://github.com/jmakumbi/Recall/releases/tag/v0.1.1) (patch)
