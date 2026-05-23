@@ -151,6 +151,7 @@ recall will search for matching files, show you the candidates, and ask whether 
 | `/kb` | Show KB stats (files, chunks, last updated) |
 | `/clear` | Clear the current conversation context |
 | `/forget <path>` | Remove a file and its chunks from the KB |
+| `/truncate` | Delete all files and chunks from the KB (prompts for confirmation) |
 | `/exit` or `/quit` | Exit recall |
 | _anything else_ | Chat query against your knowledge base |
 

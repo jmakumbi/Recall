@@ -169,6 +169,41 @@ public sealed class TrackerDb : IDisposable
         cmd.ExecuteNonQuery();
     }
 
+    /// <summary>
+    /// Remove every file, chunk, and embedding from the knowledge base,
+    /// resetting it to the same state as a freshly created database.
+    /// The database file itself is kept — only KB content is erased.
+    /// </summary>
+    public void TruncateKb()
+    {
+        using var tx = _conn.BeginTransaction();
+        try
+        {
+            // Delete in dependency order: children before parents.
+            // vec_chunks is a vec0 virtual table — bulk DELETE is supported.
+            foreach (var table in new[] { "chunks", "vec_chunks", "ingested_files" })
+            {
+                using var cmd    = _conn.CreateCommand();
+                cmd.Transaction  = tx;
+                cmd.CommandText  = $"DELETE FROM {table}";
+                cmd.ExecuteNonQuery();
+            }
+
+            using var reset    = _conn.CreateCommand();
+            reset.Transaction  = tx;
+            reset.CommandText  =
+                "UPDATE kb_stats SET total_files=0, total_chunks=0, last_updated=NULL WHERE id=1";
+            reset.ExecuteNonQuery();
+
+            tx.Commit();
+        }
+        catch
+        {
+            tx.Rollback();
+            throw;
+        }
+    }
+
     /// <summary>Start a SQLite transaction for atomic multi-step writes.</summary>
     public SqliteTransaction BeginTransaction() => _conn.BeginTransaction();
 

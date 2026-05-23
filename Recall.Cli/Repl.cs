@@ -156,6 +156,10 @@ public sealed class Repl
                 HandleForget(args);
                 break;
 
+            case "truncate":
+                await HandleTruncateAsync(ct);
+                break;
+
             case "exit":
             case "quit":
                 Environment.Exit(0);
@@ -363,6 +367,37 @@ public sealed class Repl
         AnsiConsole.MarkupLine($"[green]Removed from KB:[/] {Markup.Escape(Path.GetFileName(path))}");
     }
 
+    // ── /truncate ─────────────────────────────────────────────────────────────
+
+    private Task HandleTruncateAsync(CancellationToken ct)
+    {
+        var stats = _db.GetKbStats();
+        if (stats.TotalFiles == 0)
+        {
+            AnsiConsole.MarkupLine("[dim]Knowledge base is already empty.[/]");
+            return Task.CompletedTask;
+        }
+
+        AnsiConsole.MarkupLine(
+            $"[yellow]This will permanently delete [bold]{stats.TotalFiles}[/] file(s) " +
+            $"and [bold]{stats.TotalChunks}[/] chunk(s) from the knowledge base.[/]");
+        AnsiConsole.MarkupLine("[dim]Your actual files are not affected — only the KB index is cleared.[/]");
+        AnsiConsole.WriteLine();
+
+        bool confirmed = AnsiConsole.Confirm("[red]Truncate the knowledge base?[/]", defaultValue: false);
+        if (!confirmed)
+        {
+            AnsiConsole.MarkupLine("[dim]Cancelled.[/]");
+            return Task.CompletedTask;
+        }
+
+        _db.TruncateKb();
+        _history.Clear(); // conversation context is no longer grounded
+
+        AnsiConsole.MarkupLine("[green]Knowledge base cleared.[/] Run [bold]/ingest[/] to rebuild it.");
+        return Task.CompletedTask;
+    }
+
     // ── /setup wizard ─────────────────────────────────────────────────────────
 
     private async Task RunSetupWizardAsync(CancellationToken ct)
@@ -477,6 +512,7 @@ public sealed class Repl
         table.AddRow("/kb",              "Show knowledge base statistics");
         table.AddRow("/clear",           "Clear conversation context");
         table.AddRow("/forget <path>",   "Remove a file from the knowledge base");
+        table.AddRow("/truncate",        "Delete all files and chunks from the KB (with confirmation)");
         table.AddRow("/help",            "Show this help");
         table.AddRow("/exit",            "Exit recall");
         table.AddRow("[dim]<question>[/]", "[dim]Query the knowledge base (default)[/]");
