@@ -1,0 +1,35 @@
+# .NET
+bin/
+obj/
+publish/
+*.user
+*.suo
+.vs/
+*.nupkg
+*.snupkg
+
+# Native libs (users must supply these)
+libs/
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Config with secrets
+appsettings.local.json
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# JetBrains
+.idea/
+*.DotSettings.user
+
+# VS Code
+.vscode/
+
+# Build output
+TestResults/
