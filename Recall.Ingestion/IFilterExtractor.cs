@@ -76,12 +76,18 @@ public class IFilterExtractor
     // ── Public API ────────────────────────────────────────────────────────
 
     private readonly IngestionConfig _config;
+    private readonly OpenXmlExtractor _fallback;
 
-    public IFilterExtractor(IngestionConfig config) => _config = config;
+    public IFilterExtractor(IngestionConfig config)
+    {
+        _config   = config;
+        _fallback = new OpenXmlExtractor(config);
+    }
 
     /// <summary>
     /// Extract plain text from <paramref name="filePath"/> via IFilter.
-    /// Returns null when no IFilter is registered for the file type or on any COM failure.
+    /// If IFilter times out or returns null, falls back to <see cref="OpenXmlExtractor"/>
+    /// for Open XML formats (.docx, .xlsx, .pptx) and plain text files.
     /// Never throws to the caller.
     /// </summary>
     /// <remarks>
@@ -103,17 +109,26 @@ public class IFilterExtractor
         sta.Start();
 
         // IFilter COM calls are in-process for most file types (txt, docx, pdf).
-        // 30 s is generous; if a server-activated filter hasn't responded by then,
-        // treat it as a failure rather than blocking ingestion indefinitely.
+        // 15 s is generous; if a server-activated filter hasn't responded by then,
+        // fall back to the BCL Open XML extractor.
         bool finished = sta.Join(TimeSpan.FromSeconds(15));
         if (!finished)
         {
-            Log($"IFilter timed out for '{filePath}', skipping.");
-            return null;
+            Log($"IFilter timed out for '{filePath}' — trying Open XML fallback.");
+            return _fallback.Extract(filePath);
         }
 
         if (threadEx is not null)
             Log($"IFilter extraction failed for '{filePath}': {threadEx.Message}");
+
+        // If IFilter returned nothing, try the Open XML fallback
+        if (result is null)
+        {
+            var fallbackResult = _fallback.Extract(filePath);
+            if (fallbackResult is not null)
+                Log($"IFilter returned null for '{filePath}' — used Open XML fallback.");
+            return fallbackResult;
+        }
 
         return result;
     }

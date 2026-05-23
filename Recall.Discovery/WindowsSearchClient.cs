@@ -43,15 +43,13 @@ public sealed class WindowsSearchClient
             // so inline values with single-quote escaping.
             var safeQuery = query.Replace("'", "''");
 
-            var containsArg = query.Contains(' ')
-                ? $"'\"{ safeQuery }\"'"
-                : $"'{safeQuery}'";
-
             // Build OR condition across all configured paths (recursive via LIKE 'path\%')
             var scopeClauses = paths
                 .Select(p => $"System.ItemPathDisplay LIKE '{p.Replace("'", "''")}\\%'");
             var scopeWhere = "(" + string.Join(" OR ", scopeClauses) + ")";
 
+            // FREETEXT handles multi-word queries with stemming and ranking;
+            // CONTAINS with quotes would require an exact phrase match.
             var sql = $"""
                 SELECT TOP 50
                     System.ItemPathDisplay,
@@ -59,7 +57,7 @@ public sealed class WindowsSearchClient
                     System.Kind,
                     System.DateModified
                 FROM SystemIndex
-                WHERE CONTAINS(*, {containsArg})
+                WHERE FREETEXT(*, '{safeQuery}')
                   AND {scopeWhere}
                 ORDER BY System.DateModified DESC
                 """;

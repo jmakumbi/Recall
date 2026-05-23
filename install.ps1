@@ -19,7 +19,7 @@
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [string] $EmbeddingModel = "nomic-embed-text",
-    [string] $ChatModel      = "qwen3:8b",
+    [string] $ChatModel      = "qwen3:14b",
     [switch] $SkipOllama,
     [switch] $SkipModelPull
 )
