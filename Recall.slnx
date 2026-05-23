@@ -1,4 +1,10 @@
 <Solution>
+  <Project Path="Recall.Discovery/Recall.Discovery.csproj" />
+  <Project Path="Recall.DiscoveryTest/Recall.DiscoveryTest.csproj" />
+  <Project Path="Recall.Ingestion/Recall.Ingestion.csproj" />
+  <Project Path="Recall.IngestionTest/Recall.IngestionTest.csproj" />
+  <Project Path="Recall.Ollama/Recall.Ollama.csproj" />
+  <Project Path="Recall.OllamaTest/Recall.OllamaTest.csproj" />
   <Project Path="Recall.Storage/Recall.Storage.csproj" />
   <Project Path="Recall.StorageTest/Recall.StorageTest.csproj" />
 </Solution>

@@ -4,6 +4,27 @@ Phases are released as GitHub tags once all tasks in the phase are done.
 
 ---
 
+## Phase 4 — `Recall.Ingestion` — v0.4.0 — 2026-05-23
+
+**Released:** [v0.4.0](https://github.com/jmakumbi/Recall/releases/tag/v0.4.0)
+
+Implemented the text extraction, chunking, and ingestion pipeline layer:
+
+- `IngestionConfig.cs` — `ChunkSize` (512 tokens), `ChunkOverlap` (100), `MaxExtractedCharsPerFile` (500 000 chars); `IngestionProgress` progress record
+- `IFilterExtractor.cs` — Windows IFilter COM interop; `[ComImport]` `IFilter` interface (`{89BCB740-6119-101A-BCB7-00DD010655AF}`); `LoadIFilter` P/Invoke from `query.dll`; extraction loop `GetChunk` → `GetText` → accumulate; dedicated STA thread with 15s timeout; graceful null return on all failures; `virtual Extract()` to allow test overrides
+- `Chunker.cs` — sliding-window word-boundary chunker; token heuristic `chars / 4`; overlap by walking back `overlapChars` words; discards sub-50-token tail chunks
+- `IngestionPipeline.cs` — full extract → chunk → embed → store flow; staleness check via `LastWriteTimeUtc`; deletes old vec rows before re-ingesting; double `MarkIngested` to capture vec row IDs; `IProgress<IngestionProgress>` support
+- `Recall.IngestionTest` — chunker unit test ✓ · IFilterExtractor with real document ✓ · full pipeline with `PlainTextExtractor` stub ✓
+- `OllamaClient.Normalize()` — L2-normalise embeddings to unit vectors so L2 distance ∈ [0, 2] (avoids unbounded raw distances from nomic-embed-text); applied in `EmbedAsync` for both storage and search
+
+**Verified:** 27 chunks embedded and stored · ANN search returning 3 results (closest L2 ≈ 0.81) · re-ingest correctly skipped ✓
+
+**Notes:**
+- IFilter `LoadIFilter` times out on OneDrive-backed files on dev machine — graceful 15s timeout handles it; local files work correctly
+- Embedding normalisation is critical: raw nomic-embed-text vectors have unbounded L2 distances (>> 2.0); unit-normalised vectors cap max distance at 2.0 (opposite directions)
+
+---
+
 ## Phase 3 — `Recall.Discovery` — v0.3.0 — 2026-05-23
 
 **Released:** [v0.3.0](https://github.com/jmakumbi/Recall/releases/tag/v0.3.0)

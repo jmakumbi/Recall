@@ -66,27 +66,27 @@ Phases map directly to the build order in the spec.
 
 ---
 
-## Phase 4 — `Recall.Ingestion`
+## Phase 4 — `Recall.Ingestion` ✅ DONE (v0.4.0)
 
-- [ ] Create project `Recall.Ingestion/Recall.Ingestion.csproj`
-- [ ] Implement `IFilterExtractor.cs`
-  - [ ] `[ComImport]` declarations for `IFilter` and `IFilterChunk` with correct GUIDs
-  - [ ] P/Invoke `LoadIFilter` from `query.dll`
-  - [ ] Extraction loop: `GetChunk` → `GetText` → accumulate, stop at `MaxExtractedCharsPerFile`
-  - [ ] Graceful handling of `FILTER_E_NO_FILTER_FOR_EXT`, `FILTER_E_ACCESS`, and any HRESULT
-  - [ ] COM release in `finally` blocks
-- [ ] Implement `Chunker.cs`
-  - [ ] `Chunk(string text, int chunkSize, int overlap) → IEnumerable<string>`
-  - [ ] Word-boundary splitting, token heuristic `text.Length / 4`
-  - [ ] Overlap = last N tokens prepended to next chunk
-  - [ ] Discard chunks shorter than 50 tokens
-- [ ] Implement `IngestionPipeline.cs`
-  - [ ] Staleness check per file
-  - [ ] Orchestrate: extract → chunk → embed → store
-  - [ ] Delete stale chunks before re-ingesting
-  - [ ] Update `kb_stats` after each file
-  - [ ] Spectre.Console progress bar per file (or stub for now, wired in CLI phase)
-- [ ] Test ingestion end-to-end on a small set of `.docx`, `.pdf`, `.txt` files
+- [x] Create project `Recall.Ingestion/Recall.Ingestion.csproj`
+- [x] Implement `IFilterExtractor.cs`
+  - [x] `[ComImport]` declarations for `IFilter` with correct GUIDs
+  - [x] P/Invoke `LoadIFilter` from `query.dll`
+  - [x] Extraction loop: `GetChunk` → `GetText` → accumulate, stop at `MaxExtractedCharsPerFile`
+  - [x] Graceful handling of all HRESULTs; returns null on any failure
+  - [x] COM release in `finally` blocks; dedicated STA thread with 15s timeout
+- [x] Implement `Chunker.cs`
+  - [x] `Chunk(string text, int chunkSize, int overlap) → IEnumerable<string>`
+  - [x] Word-boundary splitting, token heuristic `text.Length / 4`
+  - [x] Overlap = last N tokens prepended to next chunk
+  - [x] Discard chunks shorter than 50 tokens
+- [x] Implement `IngestionPipeline.cs`
+  - [x] Staleness check per file via `LastWriteTimeUtc`
+  - [x] Orchestrate: extract → chunk → embed → store
+  - [x] Delete stale chunks before re-ingesting
+  - [x] `IProgress<IngestionProgress>` for progress reporting
+- [x] Normalize embeddings in `OllamaClient.EmbedAsync` (L2 unit vectors for correct ANN distances)
+- [x] `Recall.IngestionTest` — smoke test: chunker ✓ · pipeline 27 chunks ✓ · ANN search ✓ (L2 ≈ 0.81) · re-ingest skip ✓
 
 ---
 

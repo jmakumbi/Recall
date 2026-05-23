@@ -91,7 +91,26 @@ public sealed class OllamaClient : IDisposable
             throw new InvalidOperationException(
                 $"Ollama returned an empty embedding. Is '{_config.EmbeddingModel}' pulled?");
 
-        return body.Embedding;
+        return Normalize(body.Embedding);
+    }
+
+    /// <summary>
+    /// L2-normalises a vector in-place so its magnitude is 1.
+    /// After normalisation, L2 distance between two vectors equals
+    /// sqrt(2 * (1 - cosine_similarity)) and is bounded to [0, 2].
+    /// A max-distance threshold of ~1.0 corresponds to cosine similarity ≥ 0.5.
+    /// </summary>
+    public static float[] Normalize(float[] v)
+    {
+        double sumSq = 0;
+        foreach (var f in v) sumSq += (double)f * f;
+        if (sumSq == 0) return v;
+
+        var scale = (float)(1.0 / Math.Sqrt(sumSq));
+        var result = new float[v.Length];
+        for (int i = 0; i < v.Length; i++)
+            result[i] = v[i] * scale;
+        return result;
     }
 
     // ── Chat (streaming) ──────────────────────────────────────────────────
