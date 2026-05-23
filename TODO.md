@@ -43,24 +43,26 @@ Phases map directly to the build order in the spec.
 
 ---
 
-## Phase 3 — `Recall.Discovery`
+## Phase 3 — `Recall.Discovery` ✅ DONE (v0.3.0)
 
-- [ ] Create project `Recall.Discovery/Recall.Discovery.csproj`
-- [ ] Add `System.Data.OleDb` NuGet reference
-- [ ] Define `DiscoveryResult` record with all fields from spec
-- [ ] Implement `EverythingClient.cs`
-  - [ ] P/Invoke declarations for all `Everything_*` functions
-  - [ ] `NativeLibrary.Load()` with configured `EverythingDllPath`
-  - [ ] `Search(string query, uint maxResults) → IEnumerable<DiscoveryResult>`
-  - [ ] One-time warning if Everything service not detected
-- [ ] Implement `WindowsSearchClient.cs`
-  - [ ] OLE DB connection with `Provider=Search.CollatorDSO.1`
-  - [ ] Parameterised query template from spec
-  - [ ] `Search(string query, string scope) → IEnumerable<DiscoveryResult>`
-- [ ] Merge Everything + WDS results: Everything canonical, WDS enriches `AutoSummary`/`Kind`
-- [ ] Normalise `FullPath` (lowercase, normalised separators) for dedup
-- [ ] Populate `AlreadyIngested` and `IsStale` via `TrackerDb` lookup after merge
-- [ ] Test discovery layer with real Windows Search and a test query
+- [x] Create project `Recall.Discovery/Recall.Discovery.csproj`
+- [x] Add `System.Data.OleDb` NuGet reference
+- [x] Define `DiscoveryResult` record + `DiscoveryConfig`
+- [x] Implement `EverythingClient.cs`
+  - [x] P/Invoke declarations for all `Everything_*` functions
+  - [x] `NativeLibrary.SetDllImportResolver` — load from configured path at runtime
+  - [x] `Search(string query) → IReadOnlyList<DiscoveryResult>`
+  - [x] One-time warning if Everything IPC unavailable
+- [x] Implement `WindowsSearchClient.cs`
+  - [x] OLE DB connection with `Provider=Search.CollatorDSO.1`
+  - [x] Inline-SQL (Search.CollatorDSO.1 does not support ICommandWithParameters)
+  - [x] Single-quote escaping for safe inline values
+  - [x] `Search(string query) → IReadOnlyList<DiscoveryResult>`
+- [x] Implement `DiscoveryService.cs` — orchestrates merge + enrichment
+  - [x] Everything canonical; WDS enriches `WdsSnippet`/`WdsKind` where paths match
+  - [x] Normalise + deduplicate by lowercased full path
+  - [x] Populate `AlreadyIngested` and `IsStale` via optional `TrackerDb`
+- [x] `Recall.DiscoveryTest` — smoke test: WDS live results ✓, merge ✓, KB status ✓
 
 ---
 

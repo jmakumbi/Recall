@@ -4,6 +4,24 @@ Phases are released as GitHub tags once all tasks in the phase are done.
 
 ---
 
+## Phase 3 — `Recall.Discovery` — v0.3.0 — 2026-05-23
+
+**Released:** [v0.3.0](https://github.com/jmakumbi/Recall/releases/tag/v0.3.0)
+
+Implemented the file discovery layer:
+
+- `DiscoveryResult.cs` — record with `FullPath`, `FileName`, `Extension`, `SizeBytes`, `LastModified`, `WdsSnippet`, `WdsKind`, `AlreadyIngested`, `IsStale`; `DiscoveryConfig`
+- `EverythingClient.cs` — P/Invoke via `NativeLibrary.SetDllImportResolver`; searches scoped to `DefaultSearchScope`; one-time IPC warning
+- `WindowsSearchClient.cs` — WDS OLE DB `Search.CollatorDSO.1`; inline-SQL workaround (provider doesn't implement `ICommandWithParameters`); single-quote escaping; graceful fallback on OLE DB failure
+- `DiscoveryService.cs` — orchestrates both backends, merges (Everything canonical, WDS enriches), deduplicates by normalised path, enriches `AlreadyIngested`/`IsStale` from `TrackerDb`
+- `Recall.DiscoveryTest` — smoke test; WDS returning live document results ✓
+
+**Notes:**
+- Everything not installed on dev machine — graceful degradation confirmed ✓
+- WDS inline-SQL fix required: `Search.CollatorDSO.1` rejects `ICommandWithParameters`
+
+---
+
 ## Phase 2 — `Recall.Ollama` — v0.2.0 — 2026-05-23
 
 **Released:** [v0.2.0](https://github.com/jmakumbi/Recall/releases/tag/v0.2.0)
