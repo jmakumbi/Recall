@@ -102,43 +102,36 @@ Phases map directly to the build order in the spec.
 
 ---
 
-## Phase 6 — `Recall.Cli`
+## Phase 6 — `Recall.Cli` ✅ DONE (v0.6.0)
 
-> **`/setup` path wizard** (decided during Phase 3):
-> First-run interactive command that populates `SearchPaths` in `appsettings.json`.
-> If `SearchPaths` is empty on startup, REPL shows: `"No search paths configured — run /setup to get started."`
-
-- [ ] Create project `Recall.Cli/Recall.Cli.csproj` (console app)
-- [ ] Add `Spectre.Console`, `Microsoft.Extensions.DependencyInjection`, `Microsoft.Extensions.Configuration.Json`
-- [ ] Implement `Program.cs` — DI setup, config loading, startup health check
-  - [ ] Expand `%APPDATA%` / `%USERPROFILE%` in config paths at startup
-  - [ ] Load `appsettings.json` from exe directory
-- [ ] Implement `IntentClassifier.cs`
-  - [ ] `/` prefix → command
-  - [ ] File extension hints → discovery-weighted
-  - [ ] Find/search/list keywords → discovery
-  - [ ] `IsAmbiguous` flag → prompt `"Search for files or query your knowledge base? (s/k)"`
-  - [ ] Default → chat query
-- [ ] Implement `Repl.cs` — main REPL loop
-  - [ ] Startup banner with KB stats
-  - [ ] `/setup` — interactive path wizard
-  - [ ] If `SearchPaths` is empty on startup, show nudge: `"No search paths configured — run /setup"`
-  - [ ] List current paths, prompt `[1] Add folder  [2] Remove folder  [3] Done`
-  - [ ] Validate each path exists; expand env vars before saving
-  - [ ] Write updated `SearchPaths` array back to `appsettings.json`
-- [ ] `/help` — command list
-  - [ ] `/search <query>` — discovery only, no ingestion
-  - [ ] `/ingest <query>` — discovery → selection prompt → ingest
-  - [ ] `/kb` — KB stats display
-  - [ ] `/clear` — clear conversation context
-  - [ ] `/forget <path>` — remove file from KB
-  - [ ] `/exit` / `/quit` — exit
-  - [ ] Plain query → implicit discovery/chat flow (spec §"Implicit Discovery on Chat Query")
-  - [ ] Colourize candidate list: green=in KB, yellow=stale, white=not ingested
-  - [ ] Stream chat tokens via `AnsiConsole.Write`, prefix `▸ recall:`
-  - [ ] Show `[Sources: ...]` after each response
-- [ ] Wire all six layers together via DI
-- [ ] Configure `Recall.Cli.csproj` post-publish `CopyNativeLibs` target
+- [x] Create project `Recall.Cli/Recall.Cli.csproj` (console app, assembly name `recall`)
+- [x] Add `Spectre.Console`, `Microsoft.Extensions.DependencyInjection`, `Microsoft.Extensions.Configuration.Json`
+- [x] Implement `Program.cs` — DI setup, config loading, startup health check
+  - [x] Expand `%APPDATA%` / `%USERPROFILE%` in config paths at startup
+  - [x] Load `appsettings.json` from exe directory (dev fallback: CWD)
+  - [x] Startup warnings if embedding/chat model not pulled
+- [x] Implement `IntentClassifier.cs`
+  - [x] `/` prefix → command
+  - [x] File extension hints → discovery
+  - [x] Find/search/list keywords → discovery
+  - [x] Ambiguous → Spectre.Console SelectionPrompt to disambiguate
+  - [x] Default → chat query
+- [x] Implement `AppConfig.cs` — runtime config + `SaveAsync()` for /setup persistence
+- [x] Implement `Repl.cs` — main REPL loop
+  - [x] Startup banner (FigletText) with KB stats
+  - [x] `/setup` — interactive path wizard (add/remove/done), persists to appsettings.json
+  - [x] If `SearchPaths` empty, show nudge to run /setup
+  - [x] `/help` — command table
+  - [x] `/search` — discovery + colourized table (green=in KB, yellow=stale, dim=not ingested)
+  - [x] `/ingest` — discovery → offer to ingest new/stale files
+  - [x] `/kb` — KB stats panel
+  - [x] `/clear` — clear conversation history
+  - [x] `/forget <path>` — remove file from KB
+  - [x] `/exit` / `/quit` — exit
+  - [x] Plain query → chat (streaming tokens via AnsiConsole, `▸ recall:` prefix, `[Sources:]` footer)
+  - [x] Multi-turn conversation history (last 10 exchanges)
+- [x] Wire all six layers via DI container
+- [x] `CopyNativeLibs` post-publish target copies `libs/` next to exe
 
 ---
 

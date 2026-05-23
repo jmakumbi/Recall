@@ -4,6 +4,29 @@ Phases are released as GitHub tags once all tasks in the phase are done.
 
 ---
 
+## Phase 6 — `Recall.Cli` — v0.6.0 — 2026-05-23
+
+**Released:** [v0.6.0](https://github.com/jmakumbi/Recall/releases/tag/v0.6.0)
+
+Implemented the Spectre.Console REPL and wired all six layers together:
+
+- `appsettings.json` — runtime configuration for all layers (DB path, vec0/Everything DLL paths, search paths, Ollama config, ingestion + retrieval tuning)
+- `AppConfig.cs` — runtime config model + `SaveAsync()` that surgically updates only `Recall.SearchPaths` in appsettings.json using `System.Text.Json.Nodes`, preserving all other settings
+- `IntentClassifier.cs` — classifies free-text input as `Command` (/ prefix), `Discovery` (find/search keywords or file extensions), `Chat` (what/why/how keywords), or `Ambiguous` (Spectre.Console SelectionPrompt to disambiguate)
+- `Repl.cs` — full interactive REPL:
+  - FigletText banner with KB stats panel on startup; nudge to `/setup` when no paths configured
+  - `/setup` — interactive add/remove wizard, env-var expansion, validates path exists, writes back to appsettings.json, calls `DiscoveryService.UpdateSearchPaths()` to reload at runtime
+  - `/search` + `/ingest` — discovery with colourized result table (green=in KB, yellow=stale, dim=not ingested); prompts to ingest new/stale files
+  - Chat — `Retriever.QueryAsync` → `AssembleContext` → `OllamaClient.ChatAsync` streaming; `▸ recall:` prefix; `[Sources: ...]` footer; 10-exchange rolling history
+  - All commands: `/help`, `/kb`, `/clear`, `/forget`, `/exit`/`/quit`
+- `Program.cs` — `IConfiguration` loading from appsettings.json, DI container wiring of all six layers, Ctrl+C cancellation, startup health check with per-model warnings
+- `Recall.Cli.csproj` — assembly name `recall`; `CopyNativeLibs` post-publish target copies `libs/` next to exe
+
+**Notes:**
+- `DiscoveryService` made partially mutable (non-readonly fields) to support runtime path reload via `UpdateSearchPaths()`
+
+---
+
 ## Phase 5 — `Recall.Retrieval` — v0.5.0 — 2026-05-23
 
 **Released:** [v0.5.0](https://github.com/jmakumbi/Recall/releases/tag/v0.5.0)

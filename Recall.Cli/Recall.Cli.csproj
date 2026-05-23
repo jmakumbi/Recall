@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>recall</AssemblyName>
+    <RootNamespace>Recall.Cli</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\appsettings.json" CopyToOutputDirectory="PreserveNewest" Link="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json"    Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection"   Version="8.0.0" />
+    <PackageReference Include="Spectre.Console"                            Version="0.49.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Recall.Discovery\Recall.Discovery.csproj" />
+    <ProjectReference Include="..\Recall.Ingestion\Recall.Ingestion.csproj" />
+    <ProjectReference Include="..\Recall.Retrieval\Recall.Retrieval.csproj" />
+  </ItemGroup>
+
+  <!-- Copy native libs next to the output exe after publish -->
+  <Target Name="CopyNativeLibs" AfterTargets="Publish">
+    <ItemGroup>
+      <NativeLib Include="$(MSBuildProjectDirectory)\..\libs\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(NativeLib)"
+          DestinationFolder="$(PublishDir)libs\"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(MSBuildProjectDirectory)\..\libs\')" />
+  </Target>
+
+</Project>

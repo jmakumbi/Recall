@@ -8,10 +8,10 @@ namespace Recall.Discovery;
 /// </summary>
 public sealed class DiscoveryService
 {
-    private readonly EverythingClient    _everything;
-    private readonly WindowsSearchClient _wds;
-    private readonly TrackerDb?          _tracker;
-    private readonly DiscoveryConfig     _config;
+    private EverythingClient    _everything;
+    private WindowsSearchClient _wds;
+    private readonly TrackerDb? _tracker;
+    private DiscoveryConfig     _config;
 
     public DiscoveryService(DiscoveryConfig config, TrackerDb? tracker = null)
     {
@@ -19,6 +19,22 @@ public sealed class DiscoveryService
         _everything = new EverythingClient(config);
         _wds        = new WindowsSearchClient(config);
         _tracker    = tracker;
+    }
+
+    /// <summary>
+    /// Update the configured search paths at runtime (e.g. after /setup).
+    /// Recreates the underlying clients with the new configuration.
+    /// </summary>
+    public void UpdateSearchPaths(string[] paths)
+    {
+        _config = new DiscoveryConfig
+        {
+            SearchPaths       = paths,
+            EverythingDllPath = _config.EverythingDllPath,
+            MaxResults        = _config.MaxResults
+        };
+        _everything = new EverythingClient(_config);
+        _wds        = new WindowsSearchClient(_config);
     }
 
     /// <summary>
