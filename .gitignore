@@ -19,6 +19,12 @@ libs/
 # Config with secrets
 appsettings.local.json
 
+# Zip archives (native lib downloads, not committed)
+*.zip
+
+# Claude Code local settings
+.claude/
+
 # OS
 Thumbs.db
 desktop.ini

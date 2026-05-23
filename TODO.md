@@ -5,26 +5,26 @@ Phases map directly to the build order in the spec.
 
 ---
 
-## Phase 1 — `Recall.Storage`
+## Phase 1 — `Recall.Storage` ✅ DONE (v0.1.0)
 
-- [ ] Create solution `Recall.sln` and project `Recall.Storage/Recall.Storage.csproj`
-- [ ] Add `Microsoft.Data.Sqlite` NuGet reference
-- [ ] Implement `Schema.cs` — DDL for `ingested_files`, `vec_chunks`, `chunks`, `conversations`, `kb_stats`
-- [ ] Implement `TrackerDb.cs`
-  - [ ] `OpenAndInit(string dbPath)` — opens SQLite, loads vec0 extension, runs schema DDL
-  - [ ] `IsIngested(string path) → bool`
-  - [ ] `GetTrackedFile(string path) → TrackedFile?`
-  - [ ] `MarkIngested(string path, long size, DateTime lastModified, int chunkCount, long[] vecRowIds)`
-  - [ ] `DeleteFile(string path)` — removes tracker row + chunk rows + vec rows
-  - [ ] `GetKbStats() → KbStats`
-  - [ ] `UpdateKbStats()`
-- [ ] Implement `VectorStore.cs` (in Recall.Storage or new Recall.Retrieval stub)
-  - [ ] `InsertChunk(int fileId, int chunkIndex, string text, float[] embedding) → long rowId`
-  - [ ] `DeleteChunks(long[] rowIds)`
-  - [ ] `Search(float[] queryEmbedding, int topK, float minScore) → List<ChunkRow>`
-- [ ] Load `vec0.dll` via `connection.LoadExtension()` with absolute path resolution
-- [ ] Verify `recall.db` auto-creates on first run with no manual setup
-- [ ] Test storage layer in isolation (manual run or xUnit project)
+- [x] Create solution `Recall.sln` and project `Recall.Storage/Recall.Storage.csproj`
+- [x] Add `Microsoft.Data.Sqlite` NuGet reference
+- [x] Implement `Schema.cs` — DDL for `ingested_files`, `vec_chunks`, `chunks`, `conversations`, `kb_stats`
+- [x] Implement `TrackerDb.cs`
+  - [x] `OpenAndInit(string dbPath)` — opens SQLite, loads vec0 extension, runs schema DDL
+  - [x] `IsIngested(string path) → bool`
+  - [x] `GetTrackedFile(string path) → TrackedFile?`
+  - [x] `MarkIngested(string path, long size, DateTime lastModified, int chunkCount, long[] vecRowIds)`
+  - [x] `DeleteFile(string path)` — removes tracker row + chunk rows + vec rows
+  - [x] `GetKbStats() → KbStats`
+  - [x] `UpdateKbStats()`
+- [x] Implement `VectorStore.cs`
+  - [x] `InsertChunk(int fileId, int chunkIndex, string text, float[] embedding) → long rowId`
+  - [x] `DeleteChunks(long[] rowIds)`
+  - [x] `Search(float[] queryEmbedding, int topK, float minScore) → List<ChunkRow>`
+- [x] Load `vec0.dll` via `connection.LoadExtension()` with absolute path resolution
+- [x] `recall.db` auto-creates on first run (Directory.CreateDirectory + SQLite auto-create)
+- [x] Smoke test runner (`Recall.StorageTest`) — skips gracefully when `libs\vec0.dll` absent
 
 ---
 

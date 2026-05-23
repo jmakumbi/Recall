@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Recall.Storage/Recall.Storage.csproj" />
+  <Project Path="Recall.StorageTest/Recall.StorageTest.csproj" />
+</Solution>
